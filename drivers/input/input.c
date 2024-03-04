@@ -391,10 +391,24 @@ static void input_event_dispose(struct input_dev *dev, int disposition,
 	}
 }
 
+#ifdef CONFIG_KSU
+#ifndef CONFIG_KSU_KPROBES_HOOK
+extern bool ksu_input_hook __read_mostly;
+extern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);
+#endif
+#endif
+
 void input_handle_event(struct input_dev *dev,
 			unsigned int type, unsigned int code, int value)
 {
 	int disposition;
+
+#ifdef CONFIG_KSU
+#ifndef CONFIG_KSU_KPROBES_HOOK
+	if (unlikely(ksu_input_hook))
+		ksu_handle_input_handle_event(&type, &code, &value);
+#endif
+#endif
 
 	lockdep_assert_held(&dev->event_lock);
 

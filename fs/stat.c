@@ -295,6 +295,8 @@ out:
 extern bool susfs_is_sus_su_hooks_enabled __read_mostly;
 extern bool __ksu_is_allow_uid(uid_t uid);
 extern struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
+#elif CONFIG_KSU
+extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
 #endif
 
 int vfs_fstatat(int dfd, const char __user *filename,
@@ -332,6 +334,8 @@ int vfs_fstatat(int dfd, const char __user *filename,
 		goto orig_flow2;
 	}
 orig_flow1:
+#elif CONFIG_KSU
+	ksu_handle_stat(&dfd, &filename, &statx_flags);
 #endif
 
 	name = getname_flags(filename, getname_statx_lookup_flags(statx_flags), NULL);
